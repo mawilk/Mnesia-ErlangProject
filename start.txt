@@ -1,0 +1,35 @@
+-module(adventure_app).
+-export([install/1,init_tables/1]).
+-include_lib("stdlib/include/qlc.hrl").
+-include("records.hrl").
+
+install(Nodes) ->
+	ok = mnesia:create_schema(Nodes),
+	application:start(mnesia),
+	init(Nodes),
+	application:stop(mnesia).
+
+init_tables(Nodes) ->
+    mnesia:create_table(character,
+                        [{attributes, record_info(fields, character)},
+						{index, [#character.specialisation]},
+						{disc_copies, Nodes}]),
+						
+    mnesia:create_table(party,
+                        [{type, bag}, 
+						{attributes, record_info(fields, party)},
+						{disc_copies, Nodes}]),
+						
+    mnesia:create_table(event,
+                        [{type, bag}, 
+						{attributes, record_info(fields, event)},
+						{disc_copies, Nodes}]),
+						
+    mnesia:create_table(account, 
+                        [{attributes, record_info(fields, account)},
+						{index, [#account.account_balance]},
+						{disc_copies, Nodes}]),
+						
+    mnesia:create_table(item,
+                        [{attributes, record_info(fields, item)},
+						{disc_copies, Nodes}]).
