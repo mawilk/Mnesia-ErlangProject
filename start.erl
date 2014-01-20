@@ -1,15 +1,13 @@
 -module(start).
 -export([install/1,init_tables/1]).
--export([add_character/2, add_party/1, add_to_party/2, find_by_spec/1,
+-export([add_character/3, add_party/1, add_to_party/2, find_by_spec/1,
 		 kill_enemy/2, pay/2, add_enemy/3, find_prize/1]).
 
-%% 
+%% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %%
 
 -record(character, {name,
 				    specialisation,
-				    left_hand,
-				    right_hand,
-				    armor}).
+				    race}).
 				   
 -record(join_party, {party_name,
 					 charr_name}).
@@ -19,14 +17,9 @@
 
 -record(enemy, {boss_name,
 				prize,
-				event_description}).
-				
--record(item, {item_name,
-			   item_type,
-			   attribute,
-			   special_ability}).
+				description}).
 
-%%
+%% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% 
 
 install(Nodes) ->
 	ok = mnesia:create_schema(Nodes),
@@ -54,14 +47,13 @@ init_tables(Nodes) ->
 						{disc_copies, Nodes},
 						{local_content, true}]).
 	
-	
-add_character(Name, Specialisation) ->
+%%	%% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% 
+
+add_character(Name, Specialisation, Race) ->
 	F = fun() ->
 		mnesia:write(#character{name = Name,
 							    specialisation = Specialisation,
-							    left_hand = "Empty",
-							    right_hand = "Empty",
-							    armor = "None"})
+							    race = Race})
 	end,
 	mnesia:activity(transaction, F).
 	
@@ -92,16 +84,17 @@ add_enemy(BossName, Prize, Desc) ->
 	F = fun() ->
 		mnesia:write(#enemy{boss_name = BossName,
 							prize = Prize,
-							event_description = Desc})
+							description = Desc})
 	end,
 	mnesia:activity(transaction, F).
 
+%% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% 
 	
 find_by_spec(Specialisation) ->
 	Pattern = #character{ _ = '_', specialisation = Specialisation},
 	F = fun() ->
 		Res = mnesia:match_object(Pattern),
-		[{Name, LeftHand, RightHand, Armor} || #character{name=Name, left_hand=LeftHand, right_hand=RightHand, armor=Armor} <- Res]
+		[{Name, Race} || #character{name=Name, race=Race} <- Res]
 	end,
 	mnesia:activity(transaction, F).
 	
@@ -129,6 +122,14 @@ pay(Party, Prize) ->
     end,
     mnesia:transaction(F).
 	
+%% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% %% 
+
+
+
+
+
+
+
 	
 	
 	
