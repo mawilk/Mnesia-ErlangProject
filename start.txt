@@ -1,14 +1,40 @@
--module(adventure_app).
+-module().
 -export([install/1,init_tables/1]).
--include_lib("stdlib/include/qlc.hrl").
--include("records.hrl").
+
+%% 
+
+record(character, {charr_no,
+				   name,
+				   specialisation,
+				   money = 0,
+				   left_hand,
+				   right_hand,
+				   armor}).
+
+-record(party, {party_name,
+				charr_no}).
+
+-record(event, {event_no,
+				prize,
+				event_description}).
+				
+-record(join_event, {party_name,
+					 event_no}).
+				
+-record(item, {item_name,
+			   item_type,
+			   attribute,
+			   special_ability}).
+
+%%
 
 install(Nodes) ->
 	ok = mnesia:create_schema(Nodes),
-	application:start(mnesia),
-	init(Nodes),
-	application:stop(mnesia).
+	rpc:multicall(Nodes, application, start, [mnesia]),
+	init_tables(Nodes),
+%	rpc:multicall(Nodes, application, stop, [mnesia]).
 
+	
 init_tables(Nodes) ->
     mnesia:create_table(character,
                         [{attributes, record_info(fields, character)},
@@ -16,20 +42,15 @@ init_tables(Nodes) ->
 						{disc_copies, Nodes}]),
 						
     mnesia:create_table(party,
-                        [{type, bag}, 
-						{attributes, record_info(fields, party)},
+                        [{attributes, record_info(fields, party)},
 						{disc_copies, Nodes}]),
 						
     mnesia:create_table(event,
+                        [{attributes, record_info(fields, event)},
+						{disc_copies, Nodes}]),
+						
+	mnesia:create_table(join_event,
                         [{type, bag}, 
-						{attributes, record_info(fields, event)},
-						{disc_copies, Nodes}]),
+						{attributes, record_info(fields, join_event)},
+						{disc_copies, Nodes}])
 						
-    mnesia:create_table(account, 
-                        [{attributes, record_info(fields, account)},
-						{index, [#account.account_balance]},
-						{disc_copies, Nodes}]),
-						
-    mnesia:create_table(item,
-                        [{attributes, record_info(fields, item)},
-						{disc_copies, Nodes}]).
