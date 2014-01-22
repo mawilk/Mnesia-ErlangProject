@@ -18,7 +18,7 @@ Naszą baze powinniśmy umieścić w jakimś wybranym folderze.
 ```
 cd("C:\\FolderNaBaze").
 ```
-Utworzenie schematu przykładowej bazy:
+Utworzenie schematu bazy z pliku start.erl:
 ```
 c(start).
 start:install([node()]).
